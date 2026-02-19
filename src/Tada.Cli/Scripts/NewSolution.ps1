@@ -10,6 +10,7 @@ dotnet tool install dotnet-format;
 dotnet tool install Tada;
 
 dotnet new sln -n "$SOLUTION_NAME";
+dotnet new tada-sln -n $SOLUTION_NAME -o ./;
 
 dotnet new classlib -n "$SOLUTION_NAME.Domain.Core" -o "./src/1.Domain/$SOLUTION_NAME.Domain.Core";
 dotnet sln add "./src/1.Domain/$SOLUTION_NAME.Domain.Core/$SOLUTION_NAME.Domain.Core.csproj";
@@ -24,8 +25,6 @@ dotnet sln add "./src/1.Domain/$SOLUTION_NAME.Domain.Services/$SOLUTION_NAME.Dom
 dotnet new classlib -n "$SOLUTION_NAME.Infrastructure.Database" -o "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database";
 dotnet new classlib -n "$SOLUTION_NAME.Infrastructure.Database.Repositories" -o "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database.Repositories";
 dotnet new xunit -n "$SOLUTION_NAME.Infrastructure.Database.Tests" -o "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database.Tests";
-
-dotnet user-secrets init -p "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database/$SOLUTION_NAME.Infrastructure.Database.csproj" --id "$SOLUTION_NAME-local-settings";
 
 dotnet add "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database/$SOLUTION_NAME.Infrastructure.Database.csproj" package Microsoft.EntityFrameworkCore;
 dotnet add "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database/$SOLUTION_NAME.Infrastructure.Database.csproj" package Microsoft.EntityFrameworkCore.Design;
@@ -67,8 +66,6 @@ dotnet sln add "./src/3.Services/$SOLUTION_NAME.Services.Tests/$SOLUTION_NAME.Se
 
 dotnet new webapi -n "$SOLUTION_NAME.Presentation.Api" -o "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api" --use-controllers true;
 
-dotnet user-secrets init -p "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj" --id "$SOLUTION_NAME-local-settings";
-
 dotnet add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj" reference "./src/1.Domain/$SOLUTION_NAME.Domain.Core/$SOLUTION_NAME.Domain.Core.csproj";
 dotnet add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj" reference "./src/1.Domain/$SOLUTION_NAME.Domain.Services/$SOLUTION_NAME.Domain.Services.csproj";
 dotnet add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj" reference "./src/2.Infrastructure/Database/$SOLUTION_NAME.Infrastructure.Database/$SOLUTION_NAME.Infrastructure.Database.csproj";
@@ -79,7 +76,5 @@ dotnet add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.
 dotnet add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj" package Swashbuckle.AspNetCore.Annotations;
 
 dotnet sln add "./src/4.Presentation/$SOLUTION_NAME.Presentation.Api/$SOLUTION_NAME.Presentation.Api.csproj";
-
-dotnet new tada-sln -n $SOLUTION_NAME -o ./;
 
 dotnet restore;

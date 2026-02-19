@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Tada.Cli;
 
 public static class FileUpdater
@@ -54,6 +56,27 @@ public static class FileUpdater
         {
             content = value + content;
         }
+
+        File.WriteAllText(filePath, content);
+    }
+
+    public static void StripCsprojProperties(string filePath, params string[] propertyNames)
+    {
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("File not found: " + filePath);
+            return;
+        }
+
+        var content = File.ReadAllText(filePath);
+
+        foreach (var property in propertyNames)
+        {
+            content = Regex.Replace(content, $@"\s*<{property}>.*?</{property}>", "");
+        }
+
+        // Remove empty PropertyGroup elements left behind
+        content = Regex.Replace(content, @"\s*<PropertyGroup>\s*</PropertyGroup>", "");
 
         File.WriteAllText(filePath, content);
     }
