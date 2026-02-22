@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 using TadaSourceName.Presentation.Api.Attributes;
 

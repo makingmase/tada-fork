@@ -2,7 +2,7 @@ using TadaSourceName.Domain.Core;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -116,15 +116,15 @@ public class RequestPatchOperationFilter : IOperationFilter
                 var modelType = parameter.ModelMetadata.ModelType.GetGenericArguments()[0];
                 operation.RequestBody = new OpenApiRequestBody
                 {
-                    Content =
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new OpenApiMediaType
                         {
-                            ["application/json"] = new OpenApiMediaType
-                            {
-                                Schema = context.SchemaGenerator.GenerateSchema(
-                                    modelType,
-                                    context.SchemaRepository)
-                            }
+                            Schema = context.SchemaGenerator.GenerateSchema(
+                                modelType,
+                                context.SchemaRepository)
                         }
+                    }
                 };
             }
         }

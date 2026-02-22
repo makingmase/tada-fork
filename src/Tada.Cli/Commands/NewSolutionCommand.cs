@@ -32,11 +32,27 @@ public class NewSolutionCommand : Command
         }
 
         var shell = new ProcessShell();
+
+        // Phase 1: Create all projects (dotnet new commands)
         shell.Execute(Assembly.GetExecutingAssembly().GetResourceText("Scripts.NewSolution.ps1")
             .Replace("$SOLUTION_NAME", solutionName));
 
+        // Strip properties inherited from Directory.Build.props and
+        // remove inline Version attributes from PackageReference items added by dotnet new templates.
+        // This must happen before dotnet add package commands, which fail if inline versions exist under CPM.
+        var srcDir = Path.Combine(Directory.GetCurrentDirectory(), "src");
+        foreach (var csprojFile in System.IO.Directory.GetFiles(srcDir, "*.csproj", SearchOption.AllDirectories))
+        {
+            FileUpdater.StripCsprojProperties(csprojFile,
+                "TargetFramework", "Nullable", "ImplicitUsings", "UserSecretsId");
+            FileUpdater.StripPackageReferenceVersions(csprojFile);
+        }
+
+        // Phase 2: Add package references, project references, and solution entries
+        shell.Execute(Assembly.GetExecutingAssembly().GetResourceText("Scripts.NewSolutionPackages.ps1")
+            .Replace("$SOLUTION_NAME", solutionName));
+
         var config = ConfigurationLoader.LoadTadaFile()!;
-        var packagePropsPath = Path.Combine(Directory.GetCurrentDirectory(), "Directory.Packages.props");
 
         if (dbType == DbTypes.Mysql)
         {
@@ -51,12 +67,6 @@ public class NewSolutionCommand : Command
 
             shell.Execute(Assembly.GetExecutingAssembly().GetResourceText("Scripts.AddMySql.ps1")
                 .Replace("$SOLUTION_NAME", solutionName));
-
-            FileUpdater.UpdateContent(packagePropsPath,
-                "<!-- tada injection token - database packages -->",
-                @"<PackageVersion Include=""Pomelo.EntityFrameworkCore.MySql"" Version=""9.0.0"" />
-    <PackageVersion Include=""Pomelo.EntityFrameworkCore.MySql.NetTopologySuite"" Version=""9.0.0"" />
-    <PackageVersion Include=""Pomelo.EntityFrameworkCore.MySql.Json.Microsoft"" Version=""9.0.0"" />");
 
             shell.Execute("dotnet", $"user-secrets set \"ConnectionStrings:Database\" \"server=localhost;port=3308;database={config.Database.Name}db;uid={config.Database.Username};pwd={config.Database.Password};ConvertZeroDateTime=True\" -p \"./src/2.Infrastructure/Database/{solutionName}.Infrastructure.Database/{solutionName}.Infrastructure.Database.csproj\"");
         }
@@ -74,10 +84,6 @@ public class NewSolutionCommand : Command
             shell.Execute(Assembly.GetExecutingAssembly().GetResourceText("Scripts.AddPostgres.ps1")
                 .Replace("$SOLUTION_NAME", solutionName));
 
-            FileUpdater.UpdateContent(packagePropsPath,
-                "<!-- tada injection token - database packages -->",
-                @"<PackageVersion Include=""Npgsql.EntityFrameworkCore.PostgreSQL"" Version=""10.0.0"" />");
-
             shell.Execute("dotnet", $"user-secrets set \"ConnectionStrings:Database\" \"Server=localhost;Port=5432;Database={config.Database.Name}db;Username={config.Database.Username};Password={config.Database.Password};\" -p \"./src/2.Infrastructure/Database/{solutionName}.Infrastructure.Database/{solutionName}.Infrastructure.Database.csproj\"");
         }
         else if (dbType == DbTypes.SqlServer)
@@ -94,10 +100,6 @@ public class NewSolutionCommand : Command
             shell.Execute(Assembly.GetExecutingAssembly().GetResourceText("Scripts.AddSqlServer.ps1")
                 .Replace("$SOLUTION_NAME", solutionName));
 
-            FileUpdater.UpdateContent(packagePropsPath,
-                "<!-- tada injection token - database packages -->",
-                @"<PackageVersion Include=""Microsoft.EntityFrameworkCore.SqlServer"" Version=""10.0.2"" />");
-
             shell.Execute("dotnet", $"user-secrets set \"ConnectionStrings:Database\" \"Server=localhost,1433;Database={config.Database.Name};User Id={config.Database.Username};Password={config.Database.Password};TrustServerCertificate=True;\" -p \"./src/2.Infrastructure/Database/{solutionName}.Infrastructure.Database/{solutionName}.Infrastructure.Database.csproj\"");
         }
 
@@ -106,14 +108,6 @@ public class NewSolutionCommand : Command
         shell.DeleteFileInSubDirectories("WeatherForecastController.cs");
         shell.DeleteFileInSubDirectories("WeatherForecast.cs");
         shell.DeleteFileInSubDirectories("Worker.cs");
-
-        // Strip properties now inherited from Directory.Build.props
-        var srcDir = Path.Combine(Directory.GetCurrentDirectory(), "src");
-        foreach (var csprojFile in System.IO.Directory.GetFiles(srcDir, "*.csproj", SearchOption.AllDirectories))
-        {
-            FileUpdater.StripCsprojProperties(csprojFile,
-                "TargetFramework", "Nullable", "ImplicitUsings", "UserSecretsId");
-        }
 
         var apiProgramFilePath = Path.Combine(Directory.GetCurrentDirectory(), $"src/4.Presentation/{solutionName}.Presentation.Api/Program.cs");
         FileUpdater.UpdateContent(apiProgramFilePath,

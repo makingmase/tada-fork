@@ -80,4 +80,20 @@ public static class FileUpdater
 
         File.WriteAllText(filePath, content);
     }
+
+    public static void StripPackageReferenceVersions(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("File not found: " + filePath);
+            return;
+        }
+
+        var content = File.ReadAllText(filePath);
+
+        // Strip Version="..." from PackageReference elements (CPM manages versions centrally)
+        content = Regex.Replace(content, @"(<PackageReference Include=""[^""]+"")\s+Version=""[^""]+""", "$1");
+
+        File.WriteAllText(filePath, content);
+    }
 }
