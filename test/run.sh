@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-echo "Building and running tada template verification..."
+echo "Building tada template verification image..."
 docker build -f test/Dockerfile -t tada-test .
 
 echo ""

@@ -58,6 +58,18 @@
             },
             "command": "bash  ./lib/installLocally.sh",
             "problemMatcher": []
+        },
+        {
+            "label": "Test Template Docker Builds",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/"
+            },
+            "presentation": {
+                "echo": true
+            },
+            "command": "bash ./test/run.sh",
+            "problemMatcher": []
         }
     ]
 }

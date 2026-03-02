@@ -42,6 +42,6 @@ RUN echo "=== Checking CPM files ===" \
     && test -f /test/postgres/Directory.Packages.props \
     && test -f /test/postgres/Directory.Build.props \
     && echo "CPM files exist: PASSED" \
-    && ! grep -r 'Version=' /test/postgres/src/**/*.csproj 2>/dev/null \
+    && ! grep -R --include='*.csproj' 'Version=' /test/postgres/src 2>/dev/null \
     && echo "No inline versions: PASSED" \
     && echo "=== ALL CHECKS PASSED ==="
